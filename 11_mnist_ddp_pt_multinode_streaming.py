@@ -42,13 +42,13 @@ class MNISTH5Dataset(Dataset):
         return len(self.images)
 
     def __getitem__(self, idx):
-        imgs = torch.tensor(self.images[idx], dtype=torch.float32)   # (1000, 1, 28, 28)
-        labels = torch.tensor(self.labels[idx], dtype=torch.long)    # (1000,)
+        imgs = torch.tensor(self.images[idx], dtype=torch.float32)   # (100, 1, 28, 28)
+        labels = torch.tensor(self.labels[idx], dtype=torch.long)    # (100,)
         return imgs.view(imgs.shape[0], -1), labels
 
 def collate_batches(batch):
     # batch: list of (imgs, labels)
-    imgs = torch.cat([b[0] for b in batch], dim=0)      # (batch_size*1000, 784)
+    imgs = torch.cat([b[0] for b in batch], dim=0)      # (batch_size*100, 784)
     labels = torch.cat([b[1] for b in batch], dim=0)
     return imgs, labels
 
@@ -121,25 +121,6 @@ def train_worker(epochs=5, h5_path="mnist_grouped.h5"):
     #     plt.savefig("./img/mnist_loss_curve_ddp_pt.png")
 
     dist.destroy_process_group()
-
-
-    # device = torch.device(f"cuda:{local_rank}")
-    # model = DDP(Net().to(device), device_ids=[local_rank])
-    # criterion = nn.CrossEntropyLoss()
-    # optimizer = optim.Adam(model.parameters(), lr=1e-3 * world_size)
-
-    # for epoch in range(epochs):
-    #     sampler.set_epoch(epoch)
-    #     for data, target in loader:
-    #         data, target = data.to(device), target.to(device)
-    #         optimizer.zero_grad()
-    #         output = model(data)
-    #         loss = criterion(output, target)
-    #         loss.backward()
-    #         optimizer.step()
-    #     print(f"[GPU {local_rank}] Epoch {epoch+1}/{epochs} | Loss: {loss.item():.4f}")
-
-    # dist.destroy_process_group()
 
 
 # ---------------------------

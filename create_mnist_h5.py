@@ -47,4 +47,4 @@ def create_mnist_h5(out_path="mnist_grouped.h5", group_size=1000):
 
 
 if __name__ == "__main__":
-    create_mnist_h5("mnist_grouped.h5", group_size=1000)
+    create_mnist_h5("mnist_grouped.h5", group_size=100)

@@ -47,7 +47,7 @@ def train_worker(rank, world_size, epochs=5):
     # Model / optimizer
     model = Net().to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=0.001 * world_size)
 
     losses = []
     for epoch in range(epochs):

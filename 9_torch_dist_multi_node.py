@@ -8,6 +8,7 @@ def init_dist():
     local_rank = int(os.environ["SLURM_LOCALID"])
     global_rank = int(os.environ['SLURM_PROCID'])
     world_size = int(os.environ['SLURM_NTASKS'])
+    node_rank = int(os.environ['SLURM_NODEID'])
 
     os.environ['RANK'] = str(global_rank)
     os.environ['WORLD_SIZE'] = str(world_size)
@@ -16,9 +17,11 @@ def init_dist():
 
     if torch.cuda.is_available():
         torch.cuda.set_device(local_rank)
+
     device = torch.cuda.current_device()
 
-    print("running on rank {} (local: {}) with world size {}".format(global_rank, local_rank, world_size))
+    print("running on rank {} (local: {}, node {}) with world size {}".format(global_rank, local_rank, node_rank, world_size))
+
     return global_rank, world_size, local_rank
 
 def run():

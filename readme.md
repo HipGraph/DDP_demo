@@ -8,16 +8,20 @@ Slide: https://docs.google.com/presentation/d/1y15fzHoBhjBFpmy44Q3VrW0gJMS7ePhCV
     - Multinode: salloc --nodes 2 --qos interactive --time 00:30:00 --ntasks-per-node=4 --cpus-per-task=32 --constraint gpu --gpus-per-node 4 --account=<acc_name>_g
         - Run: ./multinode_setup_and_run.sh [9-11]<filename>.py
     Enable PyTorch: module load pytorch/2.6.0
-    Check for slow import: python -X importtime file.py
     Deep profiling: 
     - pip install -U tensorboard torch-tb-profiler
     - **Add profile context in the code**
     - tensorboard --logdir=./log
-    Debug using print: print('test', flush=True)
+    Debug Tips:
+    - Check for slow import: python -X importtime file.py
+    - When using print, use flush=True. E.g.: print('test', flush=True)
 
-## Files
+## Contents
 
 ### Day 1
+
+#### Files 
+
 - `0_torch_dist.py` Launch 4 processes and performs all_reduce
 - `1_torch_dist_gpu.py` Launch 4 processes and performs all_reduce in GPU
 - `2_mnist_training.py` A simple MNIST classification pipeline using a single GPU
@@ -38,7 +42,7 @@ Useful Commands:
 
 #### Files
 
-- `9_torch_dist_multi_node.py` all_reduce example for multinode.
-- `10_mnist_ddp_pt_multinode.py` MNIST training pipeline for MultiNode DDP.
-- `11_mnist_ddp_pt_multinode_streaming.py` MNIST training pipeline for MultiNode DDP with streaming dataloader from disk.
-- `create_mnist_h5.py` Create chunked MNIST dataset for streaming.
+- `9_torch_dist_multi_node.py` all_reduce example for multinode
+- `10_mnist_ddp_pt_multinode.py` MNIST training pipeline for MultiNode DDP
+- `11_mnist_ddp_pt_multinode_streaming.py` MNIST training pipeline for MultiNode DDP with streaming dataloader from disk
+- `create_mnist_h5.py` Create chunked MNIST dataset for streaming
