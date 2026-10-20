@@ -1,5 +1,4 @@
 # A Brief Introduction to PyTorch DDP Model Training
-Slide: https://docs.google.com/presentation/d/1y15fzHoBhjBFpmy44Q3VrW0gJMS7ePhCVsRgXNmqC-g/edit?usp=sharing
 
 ## Useful Commands 
 
