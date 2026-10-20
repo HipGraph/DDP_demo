@@ -17,7 +17,7 @@ transform = transforms.Compose([
     transforms.Lambda(lambda x: x.view(-1))  # flatten 28x28 -> 784
 ])
 train_dataset = datasets.MNIST(root="./data", train=True, download=True, transform=transform)
-train_loader = DataLoader(train_dataset, batch_size=6400, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=5000, shuffle=True)
 
 # Model definition
 class Net(nn.Module):
@@ -40,6 +40,12 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 epochs = 5
 losses = []
 
+import time
+
+if device.type == "cuda":
+    torch.cuda.synchronize()
+start = time.perf_counter()
+
 # Training loop
 for epoch in range(epochs):
     for data, target in train_loader:
@@ -52,6 +58,12 @@ for epoch in range(epochs):
         optimizer.step() # Update weights
         losses.append(loss.item()) # Store loss for plotting
     print(f"Epoch {epoch+1}/{epochs}, Loss: {loss.item():.4f}")
+
+
+if device.type == "cuda":
+    torch.cuda.synchronize()
+elapsed = time.perf_counter() - start
+print(f"Training time: {elapsed:.2f}s")
 
 # Plot loss curve
 plt.plot(losses)

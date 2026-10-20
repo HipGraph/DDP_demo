@@ -8,6 +8,7 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, DistributedSampler
 import matplotlib.pyplot as plt
 import torch.multiprocessing as mp
+import time
 
 torch.manual_seed(0)
 torch.cuda.manual_seed(0)
@@ -42,14 +43,22 @@ def train_worker(rank, world_size, epochs=5):
     ])
     dataset = datasets.MNIST(root="./data", train=True, download=True, transform=transform)
     sampler = DistributedSampler(dataset, num_replicas=world_size, rank=rank, shuffle=True)
-    train_loader = DataLoader(dataset, batch_size=6400, sampler=sampler)
+    train_loader = DataLoader(dataset, batch_size=5000, sampler=sampler)
 
     # Model / optimizer
     model = Net().to(device)
-    model = DDP(model, device_ids=[rank])  # wrap in DDP
+    # PyTorch wrapper for DDP ** no need to manually sync gradients
+    model = DDP(model)  # wrap in DDP
     criterion = nn.CrossEntropyLoss()
-    # Adjust learning rate based on number of GPUs or world size
-    optimizer = optim.Adam(model.parameters(), lr=0.001 * 4)
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+    
+    import time
+
+    if device.type == "cuda":
+        torch.cuda.synchronize()
+    start = time.perf_counter()
+
 
     losses = []
     for epoch in range(epochs):
@@ -62,8 +71,13 @@ def train_worker(rank, world_size, epochs=5):
             loss.backward()      # DDP syncs gradients automatically
             optimizer.step()
             losses.append(loss.item())
+        if epoch % 10 == 0 and rank == 0:
+            print(f"[GPU {rank}] Epoch {epoch+1}/{epochs}, Loss: {loss.item():.4f}")
 
-        print(f"[GPU {rank}] Epoch {epoch+1}/{epochs}, Loss: {loss.item():.4f}")
+    if device.type == "cuda":
+        torch.cuda.synchronize()
+    elapsed = time.perf_counter() - start
+    print(f"Training time: {elapsed:.2f}s")
 
     # Save curve per worker (only rank 0)
     if rank == 0:
@@ -72,12 +86,16 @@ def train_worker(rank, world_size, epochs=5):
         plt.ylabel("Training Loss")
         plt.title("MNIST DDP Training Loss Curve")
         os.makedirs("./img", exist_ok=True)
-        plt.savefig("./img/mnist_loss_curve_ddp_pt_lr_adj.png")
+        plt.savefig("./img/mnist_loss_curve_ddp_pt.png")
 
     dist.destroy_process_group()
 
 
 if __name__ == "__main__":
-    n_gpus = torch.cuda.device_count()
-    world_size = min(4, n_gpus)
+    # n_gpus = torch.cuda.device_count()
+    print('Start MNIST training on multiple GPUs (DDP with PyTorch)...')
+    world_size = 4
+    start_time = time.time()
     mp.spawn(train_worker, args=(world_size, 5), nprocs=world_size, join=True)
+    end_time = time.time()
+    print(f"World Size: {world_size}. Training completed in {end_time - start_time:.2f} seconds.")

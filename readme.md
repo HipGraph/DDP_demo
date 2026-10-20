@@ -27,10 +27,7 @@ Slide: https://docs.google.com/presentation/d/1y15fzHoBhjBFpmy44Q3VrW0gJMS7ePhCV
 - `2_mnist_training.py` A simple MNIST classification pipeline using a single GPU
 - `3_mnist_distributed.py` 4 identical processes performing exactly same task - a simple MNIST classification pipeline GPU
 - `4_mnist_manual_ddp.py` A manual implementation of DDP on previous pipeline with distributed sampler
-- `5_mnist_manual_ddp_profile.py` Tensorboard profiler on previous code, reduced epoch for smaller profile data. Output saved as `./log_ddp`. Inspect using `tensorboard --logdir=./log_ddp`.
-- `6_mnist_ddp_pt.py` PyTorch wrapper for DDP. No manual all_reduce needed
-- `7_mnist_ddp_pt_timing.py` PyTorch DDP code with arg = GPU number. Prints out the time taken for model training. arg = 4 should give lower runtime.
-- `8_mnist_ddp_pt_lr.py` Adjustment of learning rate so that the loss curve matches single GPU.
+- `5_mnist_ddp_pt.py` PyTorch wrapper for DDP. No manual all_reduce needed
 - `test-profile.py` A smaller DDP ML pipeline with dummy data and Tensorboard profiling for easier inspection. Output saved as `./log`. Inspect using `tensorboard --logdir=./log`.
 
 ### Day 2
@@ -42,7 +39,7 @@ Useful Commands:
 
 #### Files
 
-- `9_torch_dist_multi_node.py` all_reduce example for multinode
-- `10_mnist_ddp_pt_multinode.py` MNIST training pipeline for MultiNode DDP
-- `11_mnist_ddp_pt_multinode_streaming.py` MNIST training pipeline for MultiNode DDP with streaming dataloader from disk
+- `6_torch_dist_multi_node.py` all_reduce example for multinode
+- `7_mnist_ddp_pt_multinode.py` MNIST training pipeline for MultiNode DDP
+- `8_mnist_ddp_pt_multinode_streaming.py` MNIST training pipeline for MultiNode DDP with streaming dataloader from disk
 - `create_mnist_h5.py` Create chunked MNIST dataset for streaming

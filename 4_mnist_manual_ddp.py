@@ -42,12 +42,18 @@ def train_worker(rank, world_size, epochs=5):
 
     dataset = datasets.MNIST(root="./data", train=True, download=True, transform=transform)
     sampler = DistributedSampler(dataset, num_replicas=world_size, rank=rank, shuffle=True) # important
-    train_loader = DataLoader(dataset, batch_size=6400, sampler=sampler) # notice sampler as arg
+    train_loader = DataLoader(dataset, batch_size=5000, sampler=sampler) # notice sampler as arg
 
     # Model / optimizer
     model = Net().to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001 * world_size)
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+    import time
+
+    if device.type == "cuda":
+        torch.cuda.synchronize()
+    start = time.perf_counter()
 
     losses = []
     for epoch in range(epochs):
@@ -67,8 +73,14 @@ def train_worker(rank, world_size, epochs=5):
 
             optimizer.step()
             losses.append(loss.item())
+        if epoch % 10 == 0 and rank == 0:
+            print(f"[GPU {rank}] Epoch {epoch+1}/{epochs}, Loss: {loss.item():.4f}")
 
-        print(f"[GPU {rank}] Epoch {epoch+1}/{epochs}, Loss: {loss.item():.4f}")
+
+    if device.type == "cuda":
+        torch.cuda.synchronize()
+    elapsed = time.perf_counter() - start
+    print(f"Training time: {elapsed:.2f}s")
 
     # Save curve per worker
     if rank == 0:  # only rank 0 plots to avoid overwriting
