@@ -8,6 +8,7 @@ def run(rank, world_size):
     # Initialize the process group
     os.environ["MASTER_ADDR"] = "127.0.0.1"
     os.environ["MASTER_PORT"] = "29501"
+    # if rank != 1:
     dist.init_process_group("gloo", rank=rank, world_size=world_size)
     # Each process has a tensor with its rank + 1
     tensor = torch.tensor([rank+1.0])

@@ -47,17 +47,16 @@ def train_worker(rank, world_size, epochs=5):
     # Model / optimizer
     model = Net().to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    optimizer = optim.Adam(model.parameters(), lr=0.001 * world_size)
 
     import time
-
-    if device.type == "cuda":
-        torch.cuda.synchronize()
-    start = time.perf_counter()
 
     losses = []
     for epoch in range(epochs):
         sampler.set_epoch(epoch)  # important for shuffle
+        if device.type == "cuda":
+            torch.cuda.synchronize()
+        start = time.perf_counter()
         for data, target in train_loader:
             data, target = data.to(device), target.to(device) # move to device
             optimizer.zero_grad()
@@ -73,14 +72,14 @@ def train_worker(rank, world_size, epochs=5):
 
             optimizer.step()
             losses.append(loss.item())
-        if epoch % 10 == 0 and rank == 0:
-            print(f"[GPU {rank}] Epoch {epoch+1}/{epochs}, Loss: {loss.item():.4f}")
+        if device.type == "cuda":
+            torch.cuda.synchronize()
+        elapsed = time.perf_counter() - start
+        if rank == 0:
+            print(f"Training time: {elapsed:.2f}s")
 
 
-    if device.type == "cuda":
-        torch.cuda.synchronize()
-    elapsed = time.perf_counter() - start
-    print(f"Training time: {elapsed:.2f}s")
+
 
     # Save curve per worker
     if rank == 0:  # only rank 0 plots to avoid overwriting
